@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -26,6 +27,9 @@ func init() {
 
 	caddy.RegisterCaddyfileLoader("flag", caddy.LoaderFunc(confLoader))
 	caddy.SetDefaultCaddyfileLoader("default", caddy.LoaderFunc(defaultLoader))
+
+	flag.StringVar(&dnsserver.Port, serverType+".port", dnsserver.DefaultPort, "Default port")
+	flag.StringVar(&dnsserver.Port, "p", dnsserver.DefaultPort, "Default port")
 
 	caddy.AppName = coreName
 	caddy.AppVersion = CoreVersion
@@ -95,7 +99,7 @@ func confLoader(serverType string) (caddy.Input, error) {
 		return caddy.CaddyfileFromPipe(os.Stdin, serverType)
 	}
 
-	contents, err := os.ReadFile(conf)
+	contents, err := os.ReadFile(filepath.Clean(conf))
 	if err != nil {
 		return nil, err
 	}
@@ -169,6 +173,7 @@ var (
 
 // Build information obtained with the help of -ldflags
 var (
+	// nolint
 	appVersion = "(untracked dev build)" // inferred at startup
 	devBuild   = true                    // inferred at startup
 
